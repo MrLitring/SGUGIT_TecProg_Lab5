@@ -245,5 +245,29 @@ namespace WindowsFormsApp5
             if (radioButton3.Checked == true)
                 ShowTable(SQL_FilterByProduct());
         }
+
+        private void button8_Click(object sender, EventArgs e)
+        {
+            string nameTable = "Kukuwka";
+            string SQLQuery = "SELECT name FROM sqlite_master WHERE type='table' ORDER BY name;";
+            SQLiteCommand command = new SQLiteCommand(SQLQuery, SQLiteConn);
+            SQLiteDataReader reader = command.ExecuteReader();
+
+            while (reader.Read())
+            {
+                if (reader[0].ToString() == nameTable)
+                {
+                    SQLQuery = $" {reader[0]} ";
+                    break;
+                }
+            }
+
+            //
+            // Create Table
+            //
+
+            SQLQuery = $"CREATE TABLE {nameTable} (" +
+                $"name )";
+        }
     }
 }
