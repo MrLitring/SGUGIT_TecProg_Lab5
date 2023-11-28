@@ -11,6 +11,8 @@ using System.Data.SQLite;
 using static System.Windows.Forms.VisualStyles.VisualStyleElement.Button;
 using static System.Windows.Forms.VisualStyles.VisualStyleElement;
 using System.Data.Entity.Core.Common.CommandTrees.ExpressionBuilder;
+using System.Data.Entity.Infrastructure;
+using System.Diagnostics;
 
 namespace WindowsFormsApp5
 {
@@ -222,9 +224,9 @@ namespace WindowsFormsApp5
                 MyMessage = "Максиамльное значениее в поле" + comboBox2.Text + " = " + max.ToString();
             if ((sender as System.Windows.Forms.Button).Name == "button5")
                 MyMessage = "Среднее значениее в поле" + comboBox2.Text + " = " + (sum / dTable.Rows.Count).ToString();
-            if ((sender as System.Windows.Forms.Button).Name == "button6") 
+            if ((sender as System.Windows.Forms.Button).Name == "button6")
                 MyMessage = "Сумма значениее в поле" + comboBox2.Text + " = " + sum.ToString();
-            
+
             MessageBox.Show(MyMessage, "Расчеты", MessageBoxButtons.OK, MessageBoxIcon.Information);
 
 
@@ -240,7 +242,7 @@ namespace WindowsFormsApp5
             }
             if (radioButton1.Checked == true)
                 ShowTable(SQL_AllTable());
-            if(radioButton2.Checked == true)
+            if (radioButton2.Checked == true)
                 ShowTable(SQL_FilterByManufacture());
             if (radioButton3.Checked == true)
                 ShowTable(SQL_FilterByProduct());
@@ -248,26 +250,86 @@ namespace WindowsFormsApp5
 
         private void button8_Click(object sender, EventArgs e)
         {
-            string nameTable = "Kukuwka";
-            string SQLQuery = "SELECT name FROM sqlite_master WHERE type='table' ORDER BY name;";
-            SQLiteCommand command = new SQLiteCommand(SQLQuery, SQLiteConn);
-            SQLiteDataReader reader = command.ExecuteReader();
+            List<string> names = new List<string>();
 
-            while (reader.Read())
+            string nameTable = "Kukuwka";
+            string SQLQuery;
+            SQLiteCommand command;
+            SQLiteDataReader read;
+
+            SQLQuery = "SELECT name FROM sqlite_master WHERE type='table' ORDER BY name;";
+            command = new SQLiteCommand(SQLQuery, SQLiteConn);
+            read = command.ExecuteReader();
+            for (int i = 0; i < comboBox1.Items.Count; i++)
             {
-                if (reader[0].ToString() == nameTable)
+                while (read.Read())
                 {
-                    SQLQuery = $" {reader[0]} ";
-                    break;
+                    if (read[0].ToString() == nameTable)
+                    {
+                        SQLQuery = $"DROP TABLE {nameTable};";
+                        command = new SQLiteCommand(SQLQuery, SQLiteConn);
+                        read = command.ExecuteReader();
+                    }
                 }
             }
+
+            for (int i = 0; i < comboBox1.Items.Count; i++)
+            {
+                SQLQuery = $"PRAGMA table_info({comboBox1.Items[i].ToString()});";
+                command = new SQLiteCommand(SQLQuery, SQLiteConn);
+                read = command.ExecuteReader();
+
+                while (read.Read())
+                {
+                    foreach (string s in names)
+                    {
+                        if (s == read[1].ToString().ToUpper())
+                        {
+                            names.Remove(s);
+                            Debug.WriteLine(s + " Удален ");
+                            break;
+                        }
+                    }
+
+                    names.Add(read[1].ToString().ToUpper());
+
+                }
+
+            }
+
+            foreach (string s in names)
+            {
+                Debug.WriteLine(s);
+            }
+
 
             //
             // Create Table
             //
 
-            SQLQuery = $"CREATE TABLE {nameTable} (" +
-                $"name )";
+            SQLQuery = $"CREATE TABLE {nameTable} (";
+            foreach (string s in names)
+            {
+                SQLQuery += $" {s.Split(' ')[0]} NVARCHAR(100)";
+                if(s != names[names.Count - 1])
+                {
+                    SQLQuery += ", ";
+                }
+
+            }
+
+            SQLQuery += ");";
+            command = new SQLiteCommand(SQLQuery, SQLiteConn);
+            Debug.WriteLine(SQLQuery.ToString());
+            //command.ExecuteNonQuery();
+            read = command.ExecuteReader();
+            GetTableNames();
+
+        }
+
+        private void groupBox4_Enter(object sender, EventArgs e)
+        {
+
         }
     }
 }
