@@ -13,6 +13,8 @@ using static System.Windows.Forms.VisualStyles.VisualStyleElement;
 using System.Data.Entity.Core.Common.CommandTrees.ExpressionBuilder;
 using System.Data.Entity.Infrastructure;
 using System.Diagnostics;
+using System.Xml;
+using System.Data.SqlClient;
 
 namespace WindowsFormsApp5
 {
@@ -20,6 +22,7 @@ namespace WindowsFormsApp5
     {
         private SQLiteConnection SQLiteConn;
         private DataTable dTable;
+        private List<string> generalNameColumn;
 
         public MainForm()
         {
@@ -42,6 +45,7 @@ namespace WindowsFormsApp5
         {
             SQLiteConn = new SQLiteConnection();
             dTable = new DataTable();
+            generalNameColumn = new List<string>();
         }
 
         private bool OpenDBFile()
@@ -153,11 +157,19 @@ namespace WindowsFormsApp5
                 GetTableNames(); //nonyue
                 comboBox1.Enabled = true;
                 button2.Enabled = true;
+
+                FillGeneralColumn();
+
+                foreach (string elem in generalNameColumn)
+                {
+                    comboBox5.Items.Add(elem);
+                }
             }
         }
 
         private void button2_Click(object sender, EventArgs e)
         {
+            dTable.Clear();
             if (comboBox1.SelectedIndex == -1)
             {
                 MessageBox.Show("Выберите таблицу!", "Owubka", MessageBoxButtons.OK,
@@ -176,6 +188,7 @@ namespace WindowsFormsApp5
             radioButton2.Enabled = true;
             radioButton3.Enabled = true;
 
+            
             ShowTable(SQL_AllTable());
             GetTableColumns();
             GetManufactures();
@@ -250,28 +263,26 @@ namespace WindowsFormsApp5
 
         private void button8_Click(object sender, EventArgs e)
         {
-            List<string> names = new List<string>();
+            dTable.Clear();
 
             string nameTable = "Kukuwka";
             string SQLQuery;
             SQLiteCommand command;
             SQLiteDataReader read;
 
-            SQLQuery = "SELECT name FROM sqlite_master WHERE type='table' ORDER BY name;";
-            command = new SQLiteCommand(SQLQuery, SQLiteConn);
-            read = command.ExecuteReader();
-            for (int i = 0; i < comboBox1.Items.Count; i++)
-            {
-                while (read.Read())
-                {
-                    if (read[0].ToString() == nameTable)
-                    {
-                        SQLQuery = $"DROP TABLE {nameTable};";
-                        command = new SQLiteCommand(SQLQuery, SQLiteConn);
-                        read = command.ExecuteReader();
-                    }
-                }
-            }
+            SQLDropTable(nameTable);
+
+            CreateNewTable(nameTable, generalNameColumn);
+            FillNewTable(nameTable, generalNameColumn);
+            GetTableNames();
+
+        }
+
+        private void FillGeneralColumn()
+        {
+            string SQLQuery;
+            SQLiteCommand command;
+            SQLiteDataReader read;
 
             for (int i = 0; i < comboBox1.Items.Count; i++)
             {
@@ -281,37 +292,60 @@ namespace WindowsFormsApp5
 
                 while (read.Read())
                 {
-                    foreach (string s in names)
+                    if (isFit(read[1].ToString(), generalNameColumn) != true)
                     {
-                        if (s == read[1].ToString().ToUpper())
-                        {
-                            names.Remove(s);
-                            Debug.WriteLine(s + " Удален ");
-                            break;
-                        }
+                        generalNameColumn.Add(read[1].ToString());
                     }
-
-                    names.Add(read[1].ToString().ToUpper());
 
                 }
 
             }
+        }
 
-            foreach (string s in names)
+        private bool isFit(string name, List<string> names)
+        {
+            foreach(string s in names)
             {
-                Debug.WriteLine(s);
+                if (s == name) return true;
             }
 
+            return false;
+        }
 
-            //
-            // Create Table
-            //
+        private bool isTableExist(string name)
+        {
+            foreach(string elem in comboBox1.Items)
+            {
+                if (elem == name) return true;
+            }
+
+            return false;
+        }
+
+        private void SQLDropTable(string nameTable)
+        {
+            string SQLQuery;
+            SQLiteCommand command;
+            SQLiteDataReader read;
+
+            if(isTableExist(nameTable) == true)
+            {
+                SQLQuery = $"DROP TABLE {nameTable}";
+                command = new SQLiteCommand(SQLQuery, SQLiteConn);
+                read = command.ExecuteReader();
+            }
+        }
+
+        private void CreateNewTable(string nameTable,List<string> names)
+        {
+            string SQLQuery;
+            SQLiteCommand command;
 
             SQLQuery = $"CREATE TABLE {nameTable} (";
             foreach (string s in names)
             {
-                SQLQuery += $" {s.Split(' ')[0]} NVARCHAR(100)";
-                if(s != names[names.Count - 1])
+                SQLQuery += $" [{s.Split(' ')[0]}] STRING";
+                if (s != names[names.Count - 1])
                 {
                     SQLQuery += ", ";
                 }
@@ -319,11 +353,54 @@ namespace WindowsFormsApp5
             }
 
             SQLQuery += ");";
+
             command = new SQLiteCommand(SQLQuery, SQLiteConn);
             Debug.WriteLine(SQLQuery.ToString());
-            //command.ExecuteNonQuery();
-            read = command.ExecuteReader();
-            GetTableNames();
+            command.ExecuteNonQuery();
+        }
+
+        private void FillNewTable(string nameTable, List<string> names)
+        {
+            string SQLQuery;
+            SQLiteCommand command;
+            SQLiteDataReader read;
+
+            if (comboBox5.SelectedIndex != -1 && comboBox4.SelectedIndex != -1)
+            {
+                for (int i = 1; i < comboBox1.Items.Count - 1; i++)
+                {
+                    SQLQuery = $"Select ";
+                    foreach (string s in names)
+                    {
+                        SQLQuery += $"[{comboBox1.Items[i]}].[{s}]";
+                        if (s != names[names.Count - 1]) SQLQuery += ", ";
+                        else SQLQuery += " ";
+
+                    }
+
+                    SQLQuery += $"From {comboBox1.Items[i].ToString()} Where [{comboBox5.SelectedItem.ToString()}] {comboBox4.SelectedItem.ToString()} {textBox2.Text};";
+                    command = new SQLiteCommand(SQLQuery, SQLiteConn);
+                    read = command.ExecuteReader();
+                    Debug.WriteLine(SQLQuery);
+
+
+                    while (read.Read())
+                    {
+                        string q = $"Insert into {nameTable} VALUES(";
+                        for (int a = 0; a < names.Count; a++)
+                        {
+                            q += $"[{read[a]}]";
+                            if (a <= names.Count) q += ", ";
+                        }
+                        q += ");";
+
+                        command = new SQLiteCommand (q, SQLiteConn);
+                        command.ExecuteNonQuery();
+                    }
+
+                }
+
+            }
 
         }
 
