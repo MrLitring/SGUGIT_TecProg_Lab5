@@ -76,7 +76,7 @@
             this.panel1.Dock = System.Windows.Forms.DockStyle.Left;
             this.panel1.Location = new System.Drawing.Point(0, 0);
             this.panel1.Name = "panel1";
-            this.panel1.Size = new System.Drawing.Size(254, 450);
+            this.panel1.Size = new System.Drawing.Size(265, 450);
             this.panel1.TabIndex = 1;
             // 
             // groupBox4
@@ -94,7 +94,6 @@
             this.groupBox4.TabIndex = 1;
             this.groupBox4.TabStop = false;
             this.groupBox4.Text = "Объединение";
-            this.groupBox4.Enter += new System.EventHandler(this.groupBox4_Enter);
             // 
             // label4
             // 
@@ -351,9 +350,9 @@
             // 
             this.panel2.Controls.Add(this.dataGridView1);
             this.panel2.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.panel2.Location = new System.Drawing.Point(254, 0);
+            this.panel2.Location = new System.Drawing.Point(265, 0);
             this.panel2.Name = "panel2";
-            this.panel2.Size = new System.Drawing.Size(546, 450);
+            this.panel2.Size = new System.Drawing.Size(535, 450);
             this.panel2.TabIndex = 2;
             // 
             // dataGridView1
@@ -362,7 +361,7 @@
             this.dataGridView1.Dock = System.Windows.Forms.DockStyle.Fill;
             this.dataGridView1.Location = new System.Drawing.Point(0, 0);
             this.dataGridView1.Name = "dataGridView1";
-            this.dataGridView1.Size = new System.Drawing.Size(546, 450);
+            this.dataGridView1.Size = new System.Drawing.Size(535, 450);
             this.dataGridView1.TabIndex = 0;
             // 
             // MainForm
