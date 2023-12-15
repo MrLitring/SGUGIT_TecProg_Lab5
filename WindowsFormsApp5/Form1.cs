@@ -15,6 +15,7 @@ using System.Data.Entity.Infrastructure;
 using System.Diagnostics;
 using System.Xml;
 using System.Data.SqlClient;
+using System.Diagnostics.Eventing.Reader;
 
 namespace WindowsFormsApp5
 {
@@ -22,7 +23,6 @@ namespace WindowsFormsApp5
     {
         private SQLiteConnection SQLiteConn;
         private DataTable dTable;
-        private List<string> generalNameColumn;
 
         public MainForm()
         {
@@ -39,50 +39,28 @@ namespace WindowsFormsApp5
             radioButton1.Enabled = false;
             radioButton2.Enabled = false;
             radioButton3.Enabled = false;
+
+            comboBox5.Enabled = false;
+            comboBox4.Enabled = false;
+            button8.Enabled = false;
+            textBox2.Enabled = false;
         }
 
         private void MainForm_Load(object sender, EventArgs e)
         {
             SQLiteConn = new SQLiteConnection();
             dTable = new DataTable();
-            generalNameColumn = new List<string>();
         }
 
-        private bool OpenDBFile()
-        {
-            OpenFileDialog openFileDialog = new OpenFileDialog();
-            openFileDialog.InitialDirectory =
-            Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
-            openFileDialog.Filter = "Текстовые файлы (*.db)|*.db|Все файлы (*.*)|*.*";
-
-            if (openFileDialog.ShowDialog(this) == DialogResult.OK)
-            {
-
-                SQLiteConn = new SQLiteConnection("Data Source=" + openFileDialog.FileName + ";Version = 3;");
-                SQLiteConn.Open();
-                SQLiteCommand command = new SQLiteCommand();
-                command.Connection = SQLiteConn;
-                return true;
-            }
-            else return false;
-        }
-
-        private void GetTableNames()
-        {
-            string SQLQuery = "SELECT name FROM sqlite_master WHERE type='table' ORDER BY name;";
-            SQLiteCommand command = new SQLiteCommand(SQLQuery, SQLiteConn);
-            SQLiteDataReader reader = command.ExecuteReader();
-
-            comboBox1.Items.Clear();
-            while (reader.Read())
-            {
-                comboBox1.Items.Add(reader[0].ToString());
-            }
-        }
-
+        //
+        // Возвращаемые динамические запросы
+        //
         private string SQL_AllTable()
         {
-            return "SELECT * FROM [" + comboBox1.SelectedItem + "] order by 1";
+            if(comboBox1.SelectedIndex != -1)
+                return "SELECT * FROM [" + comboBox1.SelectedItem + "] order by 1";
+            else
+                return "SELECT * FROM [" + comboBox1.Items[1] + "] order by 1";
         }
 
         private string SQL_FilterByManufacture()
@@ -97,38 +75,48 @@ namespace WindowsFormsApp5
             "WHERE [Количество(Коробки)] <= 23";
         }
 
-        private void ShowTable(string SQLQuery)
+        //
+        // Взаимодействия с БД (доп инфа)
+        //
+        private void GetTableNames()
         {
-            dTable.Clear();
-            SQLiteDataAdapter adapter = new SQLiteDataAdapter(SQLQuery, SQLiteConn);
-            adapter.Fill(dTable);
-            dataGridView1.Columns.Clear();
-            dataGridView1.Rows.Clear();
+            string SQLQuery = "SELECT name FROM sqlite_master WHERE type='table' ORDER BY name;";
+            SQLiteCommand command = new SQLiteCommand(SQLQuery, SQLiteConn);
+            SQLiteDataReader reader = command.ExecuteReader();
 
-            for (int col = 0; col < dTable.Columns.Count; col++)
+            comboBox1.Items.Clear();
+            while (reader.Read())
             {
-                string ColName = dTable.Columns[col].ColumnName;
-                dataGridView1.Columns.Add(ColName, ColName);
-
-                dataGridView1.Columns[col].AutoSizeMode = DataGridViewAutoSizeColumnMode.AllCells;
-            }
-
-            for (int row = 0; row < dTable.Rows.Count; row++)
-            {
-                dataGridView1.Rows.Add(dTable.Rows[row].ItemArray);
+                comboBox1.Items.Add(reader[0].ToString());
             }
         }
 
-        private void GetTableColumns()
+        private void GetTableColumns(bool isIndivid = false)
         {
-            string SQLQuery = "PRAGMA table_info(\"" + comboBox1.SelectedItem + "\");";
-            SQLiteCommand command = new SQLiteCommand(SQLQuery, SQLiteConn);
-            SQLiteDataReader read = command.ExecuteReader();
-
-            comboBox2.Items.Clear();
-            while (read.Read())
+            if (isIndivid == false)
             {
-                comboBox2.Items.Add((string)read[1]);
+                string SQLQuery = "PRAGMA table_info(\"" + comboBox1.SelectedItem + "\");";
+                SQLiteCommand command = new SQLiteCommand(SQLQuery, SQLiteConn);
+                SQLiteDataReader read = command.ExecuteReader();
+
+                comboBox2.Items.Clear();
+                while (read.Read())
+                {
+                    comboBox2.Items.Add((string)read[1]);
+                }
+            }
+            else
+            {
+                string SQLQuery = "PRAGMA table_info(\"" + comboBox1.Items[comboBox1.Items.Count - 1] + "\");";
+                SQLiteCommand command = new SQLiteCommand(SQLQuery, SQLiteConn);
+                SQLiteDataReader read = command.ExecuteReader();
+
+
+                comboBox5.Items.Clear();
+                while (read.Read())
+                {
+                    comboBox5.Items.Add((string)read[1]);
+                }
             }
         }
 
@@ -150,24 +138,27 @@ namespace WindowsFormsApp5
             }
         }
 
-        private void button1_Click(object sender, EventArgs e)
+
+        //
+        // Клики мыши
+        //
+        private void button1_Click_DataBaseConnect(object sender, EventArgs e)
         {
             if (OpenDBFile() == true)
             {
                 GetTableNames(); //nonyue
+                GetTableColumns(true);
                 comboBox1.Enabled = true;
                 button2.Enabled = true;
 
-                SearchDublicateColumn();
-
-                foreach (string elem in generalNameColumn)
-                {
-                    comboBox5.Items.Add(elem);
-                }
+                comboBox5.Enabled = true;
+                comboBox4.Enabled = true;
+                button8.Enabled = true;
+                textBox2.Enabled = true;
             }
         }
 
-        private void button2_Click(object sender, EventArgs e)
+        private void button2_Click_ShowTable(object sender, EventArgs e)
         {
             dTable.Clear();
             if (comboBox1.SelectedIndex == -1)
@@ -188,13 +179,13 @@ namespace WindowsFormsApp5
             radioButton2.Enabled = true;
             radioButton3.Enabled = true;
 
-            
+
             ShowTable(SQL_AllTable());
             GetTableColumns();
             GetManufactures();
         }
 
-        private void button3_Click(object sender, EventArgs e)
+        private void button3_Click_Calculation(object sender, EventArgs e)
         {
             if (comboBox2.SelectedIndex == -1)
             {
@@ -245,7 +236,7 @@ namespace WindowsFormsApp5
 
         }
 
-        private void button7_Click(object sender, EventArgs e)
+        private void button7_Click_Filter(object sender, EventArgs e)
         {
             if (comboBox3.SelectedIndex == -1 && radioButton2.Checked == true)
             {
@@ -261,41 +252,122 @@ namespace WindowsFormsApp5
                 ShowTable(SQL_FilterByProduct());
         }
 
-        private void button8_Click(object sender, EventArgs e)
+        private bool OpenDBFile()
+        {
+            OpenFileDialog openFileDialog = new OpenFileDialog();
+            openFileDialog.InitialDirectory =
+            Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
+            openFileDialog.Filter = "Текстовые файлы (*.db)|*.db|Все файлы (*.*)|*.*";
+
+            if (openFileDialog.ShowDialog(this) == DialogResult.OK)
+            {
+
+                SQLiteConn = new SQLiteConnection("Data Source=" + openFileDialog.FileName + ";Version = 3;");
+                SQLiteConn.Open();
+                SQLiteCommand command = new SQLiteCommand();
+                command.Connection = SQLiteConn;
+                return true;
+            }
+            else return false;
+        }
+
+        private void ShowTable(string SQLQuery)
         {
             dTable.Clear();
+            SQLiteDataAdapter adapter = new SQLiteDataAdapter(SQLQuery, SQLiteConn);
+            adapter.Fill(dTable);
+            dataGridView1.Columns.Clear();
+            dataGridView1.Rows.Clear();
 
-            string nameTable = "Kukuwka";
-            string SQLQuery;
-            SQLiteCommand command;
-            SQLiteDataReader read;
+            for (int col = 0; col < dTable.Columns.Count; col++)
+            {
+                string ColName = dTable.Columns[col].ColumnName;
+                dataGridView1.Columns.Add(ColName, ColName);
 
-            DropTable(nameTable);
+                dataGridView1.Columns[col].AutoSizeMode = DataGridViewAutoSizeColumnMode.AllCells;
+            }
 
-            CreateNewTable(nameTable, generalNameColumn);
-            FillNewTable(nameTable, generalNameColumn);
-            GetTableNames();
+            for (int row = 0; row < dTable.Rows.Count; row++)
+            {
+                dataGridView1.Rows.Add(dTable.Rows[row].ItemArray);
+            }
+        }
+
+
+
+        //
+        // Индивидуальное 
+        //
+        private void button8_Click_UnionTables(object sender, EventArgs e)
+        {
+            if (comboBox4.SelectedIndex != -1 && comboBox5.SelectedIndex != -1 && textBox2.Text != "")
+            {
+                dTable.Clear();
+                string nameTable = "Kukuwka";
+                DropTable(nameTable);
+                GetTableNames();
+                comboBox1.SelectedIndex = 0;
+
+
+                if ((isNumTable() == true) && (isNum() == true) == true)
+                {
+                    CreateNewTable(nameTable);
+                    comboBox1.SelectedItem = nameTable;
+                }
+                else if ((isNumTable() == false) && (isNum() == false) == false)
+                {
+                    CreateNewTable(nameTable);
+                    comboBox1.SelectedItem = nameTable;
+                }
+                else
+                {
+                    MessageBox.Show("Ошибка значений и параметров", "Owubka");
+                }
+
+                GetTableNames();
+                ShowTable(SQL_AllTable());
+
+            }
+            else
+                MessageBox.Show("Не выбраны условия/значения для создания таблицы", "owubka");
+        }
+
+
+        private bool isNumTable()
+        {
+            string SQLQuery = $"Select * From [{comboBox1.Items[comboBox1.Items.Count - 1]}]";
+            SQLiteCommand command = new SQLiteCommand(SQLQuery, SQLiteConn);
+            SQLiteDataReader read = command.ExecuteReader();
+
+            try
+            {
+                string a = read.GetString(comboBox5.SelectedIndex);
+                return false;
+            }
+            catch
+            {
+                return true;
+            }
 
         }
 
-        
-
-        private bool isNameExist(string name, List<string> names)
+        private bool isNum()
         {
-            if (names.Count != 0)
+            double x;
+            try
             {
-                foreach (string s in names)
-                {
-                    if (s.ToLower() == name.ToLower()) return true;
-                }
+                x = double.Parse(textBox2.Text);
+                return true;
             }
-
-            return false;
+            catch
+            {
+                return false;
+            }
         }
 
         private bool isTableExist(string name)
         {
-            foreach(string elem in comboBox1.Items)
+            foreach (string elem in comboBox1.Items)
             {
                 if (elem == name) return true;
             }
@@ -305,84 +377,67 @@ namespace WindowsFormsApp5
 
         private void DropTable(string nameTable)
         {
+            if (isTableExist(nameTable) == true)
+            {
+                string SQLQuery;
+                SQLiteCommand command;
+                try
+                {
+                    SQLQuery = $"DROP TABLE {nameTable}";
+                    command = new SQLiteCommand(SQLQuery, SQLiteConn);
+                    command.ExecuteNonQuery();
+                }
+                catch
+                {
+
+                }
+            }
+        }
+
+
+
+
+
+        private void CreateNewTable(string nameTable)
+        {
             string SQLQuery;
             SQLiteCommand command;
-            SQLiteDataReader read;
 
-            if(isTableExist(nameTable) == true)
+            SQLQuery = $"CREATE TABLE [{nameTable}] as ";
+            foreach (string elem in comboBox1.Items)
             {
-                SQLQuery = $"DROP TABLE {nameTable}";
+                if (elem != nameTable)
+                {
+                    SQLQuery += $"SELECT * From [{elem}] ";
+                    SQLQuery += $"WHERE [{comboBox5.SelectedItem}] ";
+
+                    if (isNum() == false)
+                    {
+                        SQLQuery += $" = \"{textBox2.Text}\"";
+                    }
+                    else
+                    {
+                        SQLQuery += $" {comboBox4.SelectedItem} {textBox2.Text}";
+                    }
+
+                    if (comboBox1.Items[comboBox1.Items.Count - 1].ToString() == elem)
+                    {
+                        SQLQuery += " ;";
+                    }
+                    else
+                    {
+                        SQLQuery += " UNION ";
+                    }
+                }
+            }
+
+            try
+            {
                 command = new SQLiteCommand(SQLQuery, SQLiteConn);
                 command.ExecuteNonQuery();
             }
+            catch { }
         }
 
-        private void SearchDublicateColumn()
-        {
-            string SQLQuery;
-            SQLiteCommand command;
-            SQLiteDataReader read;
-
-            for (int i = 0; i < comboBox1.Items.Count; i++)
-            {
-                SQLQuery = $"PRAGMA table_info({comboBox1.Items[i].ToString()});";
-                command = new SQLiteCommand(SQLQuery, SQLiteConn);
-                read = command.ExecuteReader();
-
-                while (read.Read())
-                {
-                    if (isNameExist(read[1].ToString(), generalNameColumn) == false)
-                    {
-                        MessageBox.Show(read[1].ToString());
-                        generalNameColumn.Add(read[1].ToString());
-                    }
-
-                }
-
-            }
-
-        }
-
-        private void CreateNewTable(string nameTable,List<string> names)
-        {
-            string SQLQuery;
-            SQLiteCommand command;
-
-            SQLQuery = $"CREATE TABLE {nameTable} (";
-            foreach (string s in names)
-            {
-                SQLQuery += $" [{s.Split(' ')[0]}] ТЕКСТ";
-                if (s != names[names.Count - 1])
-                {
-                    SQLQuery += ", ";
-                }
-
-            }
-
-            SQLQuery += ");";
-
-            command = new SQLiteCommand(SQLQuery, SQLiteConn);
-            Debug.WriteLine(SQLQuery.ToString());
-            command.ExecuteNonQuery();
-        }
-
-        private void FillNewTable(string nameTable, List<string> names)
-        {
-            string SQLQuery;
-            SQLiteCommand command;
-            SQLiteDataReader read;
-
-            if (comboBox5.SelectedIndex != -1 && comboBox4.SelectedIndex != -1)
-            {
-                for (int i = 1; i < comboBox1.Items.Count - 1; i++)
-                {
-                    SQLQuery = $"SELECT * FROM Химия WHERE {comboBox5.SelectedItem.ToString()} {comboBox4.SelectedItem.ToString()} {textBox2.Text}";
-                    Debug.Write(SQLQuery);
-
-                }
-
-            }
-
-        }
     }
 }

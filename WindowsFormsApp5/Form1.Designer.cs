@@ -90,57 +90,57 @@
             this.groupBox4.Controls.Add(this.comboBox4);
             this.groupBox4.Location = new System.Drawing.Point(12, 120);
             this.groupBox4.Name = "groupBox4";
-            this.groupBox4.Size = new System.Drawing.Size(228, 141);
+            this.groupBox4.Size = new System.Drawing.Size(228, 177);
             this.groupBox4.TabIndex = 1;
             this.groupBox4.TabStop = false;
             this.groupBox4.Text = "Объединение";
             // 
             // label4
             // 
-            this.label4.Location = new System.Drawing.Point(6, 46);
+            this.label4.Location = new System.Drawing.Point(8, 43);
             this.label4.Name = "label4";
-            this.label4.Size = new System.Drawing.Size(56, 21);
+            this.label4.Size = new System.Drawing.Size(210, 21);
             this.label4.TabIndex = 11;
-            this.label4.Text = "Условие";
-            this.label4.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
+            this.label4.Text = "Выберите столбец";
+            this.label4.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
             // comboBox5
             // 
             this.comboBox5.FormattingEnabled = true;
-            this.comboBox5.Location = new System.Drawing.Point(68, 46);
+            this.comboBox5.Location = new System.Drawing.Point(11, 67);
             this.comboBox5.Name = "comboBox5";
-            this.comboBox5.Size = new System.Drawing.Size(150, 21);
+            this.comboBox5.Size = new System.Drawing.Size(211, 21);
             this.comboBox5.TabIndex = 12;
             // 
             // textBox2
             // 
-            this.textBox2.Location = new System.Drawing.Point(68, 73);
+            this.textBox2.Location = new System.Drawing.Point(11, 115);
             this.textBox2.Name = "textBox2";
-            this.textBox2.Size = new System.Drawing.Size(150, 20);
+            this.textBox2.Size = new System.Drawing.Size(207, 20);
             this.textBox2.TabIndex = 9;
             // 
             // label5
             // 
-            this.label5.Location = new System.Drawing.Point(6, 72);
+            this.label5.Location = new System.Drawing.Point(8, 91);
             this.label5.Name = "label5";
-            this.label5.Size = new System.Drawing.Size(56, 21);
+            this.label5.Size = new System.Drawing.Size(210, 21);
             this.label5.TabIndex = 10;
-            this.label5.Text = "Условие";
-            this.label5.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
+            this.label5.Text = "Впешите критерий";
+            this.label5.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
             // button8
             // 
-            this.button8.Location = new System.Drawing.Point(6, 112);
+            this.button8.Location = new System.Drawing.Point(6, 141);
             this.button8.Name = "button8";
-            this.button8.Size = new System.Drawing.Size(212, 23);
+            this.button8.Size = new System.Drawing.Size(212, 24);
             this.button8.TabIndex = 7;
             this.button8.Text = "Создать таблицу";
             this.button8.UseVisualStyleBackColor = true;
-            this.button8.Click += new System.EventHandler(this.button8_Click);
+            this.button8.Click += new System.EventHandler(this.button8_Click_UnionTables);
             // 
             // label3
             // 
-            this.label3.Location = new System.Drawing.Point(6, 19);
+            this.label3.Location = new System.Drawing.Point(6, 18);
             this.label3.Name = "label3";
             this.label3.Size = new System.Drawing.Size(56, 21);
             this.label3.TabIndex = 7;
@@ -153,7 +153,7 @@
             this.comboBox4.Items.AddRange(new object[] {
             ">=",
             "<=",
-            "=="});
+            "="});
             this.comboBox4.Location = new System.Drawing.Point(68, 19);
             this.comboBox4.Name = "comboBox4";
             this.comboBox4.Size = new System.Drawing.Size(150, 21);
@@ -166,7 +166,7 @@
             this.groupBox3.Controls.Add(this.radioButton2);
             this.groupBox3.Controls.Add(this.radioButton1);
             this.groupBox3.Controls.Add(this.comboBox3);
-            this.groupBox3.Location = new System.Drawing.Point(12, 375);
+            this.groupBox3.Location = new System.Drawing.Point(12, 411);
             this.groupBox3.Name = "groupBox3";
             this.groupBox3.Size = new System.Drawing.Size(228, 149);
             this.groupBox3.TabIndex = 7;
@@ -181,7 +181,7 @@
             this.button7.TabIndex = 7;
             this.button7.Text = "Применить фильтр";
             this.button7.UseVisualStyleBackColor = true;
-            this.button7.Click += new System.EventHandler(this.button7_Click);
+            this.button7.Click += new System.EventHandler(this.button7_Click_Filter);
             // 
             // radioButton3
             // 
@@ -232,7 +232,7 @@
             this.groupBox2.Controls.Add(this.label2);
             this.groupBox2.Controls.Add(this.comboBox2);
             this.groupBox2.Controls.Add(this.button3);
-            this.groupBox2.Location = new System.Drawing.Point(12, 267);
+            this.groupBox2.Location = new System.Drawing.Point(12, 303);
             this.groupBox2.Name = "groupBox2";
             this.groupBox2.Size = new System.Drawing.Size(228, 102);
             this.groupBox2.TabIndex = 4;
@@ -247,7 +247,7 @@
             this.button6.TabIndex = 6;
             this.button6.Text = "Сумма";
             this.button6.UseVisualStyleBackColor = true;
-            this.button6.Click += new System.EventHandler(this.button3_Click);
+            this.button6.Click += new System.EventHandler(this.button3_Click_Calculation);
             // 
             // button5
             // 
@@ -257,7 +257,7 @@
             this.button5.TabIndex = 5;
             this.button5.Text = "Среднее";
             this.button5.UseVisualStyleBackColor = true;
-            this.button5.Click += new System.EventHandler(this.button3_Click);
+            this.button5.Click += new System.EventHandler(this.button3_Click_Calculation);
             // 
             // button4
             // 
@@ -267,7 +267,7 @@
             this.button4.TabIndex = 4;
             this.button4.Text = "Максимум";
             this.button4.UseVisualStyleBackColor = true;
-            this.button4.Click += new System.EventHandler(this.button3_Click);
+            this.button4.Click += new System.EventHandler(this.button3_Click_Calculation);
             // 
             // label2
             // 
@@ -294,7 +294,7 @@
             this.button3.TabIndex = 3;
             this.button3.Text = "Минимум";
             this.button3.UseVisualStyleBackColor = true;
-            this.button3.Click += new System.EventHandler(this.button3_Click);
+            this.button3.Click += new System.EventHandler(this.button3_Click_Calculation);
             // 
             // groupBox1
             // 
@@ -334,7 +334,7 @@
             this.button2.TabIndex = 3;
             this.button2.Text = "Открыть таблицу";
             this.button2.UseVisualStyleBackColor = true;
-            this.button2.Click += new System.EventHandler(this.button2_Click);
+            this.button2.Click += new System.EventHandler(this.button2_Click_ShowTable);
             // 
             // button1
             // 
@@ -344,7 +344,7 @@
             this.button1.TabIndex = 2;
             this.button1.Text = "Подключить БД";
             this.button1.UseVisualStyleBackColor = true;
-            this.button1.Click += new System.EventHandler(this.button1_Click);
+            this.button1.Click += new System.EventHandler(this.button1_Click_DataBaseConnect);
             // 
             // panel2
             // 
