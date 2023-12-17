@@ -57,10 +57,7 @@ namespace WindowsFormsApp5
         //
         private string SQL_AllTable()
         {
-            if(comboBox1.SelectedIndex != -1)
-                return "SELECT * FROM [" + comboBox1.SelectedItem + "] order by 1";
-            else
-                return "SELECT * FROM [" + comboBox1.Items[1] + "] order by 1";
+            return "SELECT * FROM [" + comboBox1.Items[0] + "] order by 1";
         }
 
         private string SQL_FilterByManufacture()
@@ -308,21 +305,8 @@ namespace WindowsFormsApp5
                 GetTableNames();
                 comboBox1.SelectedIndex = 0;
 
-
-                if ((isNumTable() == true) && (isNum() == true) == true)
-                {
-                    CreateNewTable(nameTable);
-                    comboBox1.SelectedItem = nameTable;
-                }
-                else if ((isNumTable() == false) && (isNum() == false) == false)
-                {
-                    CreateNewTable(nameTable);
-                    comboBox1.SelectedItem = nameTable;
-                }
-                else
-                {
-                    MessageBox.Show("Ошибка значений и параметров", "Owubka");
-                }
+                CreateNewTable(nameTable);
+                comboBox1.SelectedItem = nameTable;
 
                 GetTableNames();
                 ShowTable(SQL_AllTable());
@@ -335,28 +319,31 @@ namespace WindowsFormsApp5
 
         private bool isNumTable()
         {
-            string SQLQuery = $"Select * From [{comboBox1.Items[comboBox1.Items.Count - 1]}]";
+            string SQLQuery = $"Select [{comboBox5.SelectedItem}] From [{comboBox1.Items[comboBox1.Items.Count - 1]}];";
             SQLiteCommand command = new SQLiteCommand(SQLQuery, SQLiteConn);
             SQLiteDataReader read = command.ExecuteReader();
 
             try
             {
-                string a = read.GetString(comboBox5.SelectedIndex);
-                return false;
+                read.Read();
+                double a = read.GetInt16(0);
+                read.Close();
+                return true;
             }
             catch
             {
-                return true;
+                read.Close();
+                return false;
             }
 
         }
 
-        private bool isNum()
+        private bool isNum(string text)
         {
             double x;
             try
             {
-                x = double.Parse(textBox2.Text);
+                x = double.Parse(text);
                 return true;
             }
             catch
@@ -381,22 +368,11 @@ namespace WindowsFormsApp5
             {
                 string SQLQuery;
                 SQLiteCommand command;
-                try
-                {
-                    SQLQuery = $"DROP TABLE {nameTable}";
-                    command = new SQLiteCommand(SQLQuery, SQLiteConn);
-                    command.ExecuteNonQuery();
-                }
-                catch
-                {
-
-                }
+                SQLQuery = $"DROP TABLE {nameTable};";
+                command = new SQLiteCommand(SQLQuery, SQLiteConn);
+                command.ExecuteNonQuery();
             }
         }
-
-
-
-
 
         private void CreateNewTable(string nameTable)
         {
@@ -411,14 +387,23 @@ namespace WindowsFormsApp5
                     SQLQuery += $"SELECT * From [{elem}] ";
                     SQLQuery += $"WHERE [{comboBox5.SelectedItem}] ";
 
-                    if (isNum() == false)
+                    if(isNumTable()==true)
                     {
-                        SQLQuery += $" = \"{textBox2.Text}\"";
+                        if(isNum(textBox2.Text) == true)
+                        {
+                            SQLQuery += $" {comboBox4.SelectedItem} {textBox2.Text}";
+                        }
+                        else
+                        {
+                            MessageBox.Show("Выбранный столбец не является ТЕКС\nставим по умолчанию (0)", "Owubka", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                            SQLQuery += $" {comboBox4.SelectedItem} 0";
+                        }
                     }
                     else
                     {
-                        SQLQuery += $" {comboBox4.SelectedItem} {textBox2.Text}";
+                        SQLQuery += $" = \"{textBox2.Text}\"";
                     }
+
 
                     if (comboBox1.Items[comboBox1.Items.Count - 1].ToString() == elem)
                     {
@@ -430,13 +415,9 @@ namespace WindowsFormsApp5
                     }
                 }
             }
-
-            try
-            {
-                command = new SQLiteCommand(SQLQuery, SQLiteConn);
-                command.ExecuteNonQuery();
-            }
-            catch { }
+            
+            command = new SQLiteCommand(SQLQuery, SQLiteConn);
+            command.ExecuteNonQuery();
         }
 
     }
